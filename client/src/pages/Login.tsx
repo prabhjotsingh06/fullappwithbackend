@@ -1,43 +1,52 @@
-import { userLogin } from "../api/api";
+import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Link } from "react-router";
-import { useContext } from "react";
-import { UserContext } from "../contextApi/UserContextProvider";
-import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
+import { useMutation } from "@apollo/client/react";
+import { loginMutation } from "../api/querys";
+import CustomAlert from "@/components/commanComponents/CustomAlert";
 
-interface loginUserDetails {
+interface LoginUserDetails {
   username: string;
   password: string;
 }
+interface tokens {
+  login: {
+    accessToken: string;
+    refreshToken: string;
+  };
+}
 const Login = () => {
+  const navigator = useNavigate();
+  const [login] = useMutation<tokens>(loginMutation);
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<loginUserDetails>();
-  const navigator = useNavigate();
-  const { setUserData, setLogedin } = useContext(UserContext)!;
+  } = useForm<LoginUserDetails>();
 
-  const onSubmit = async (data: loginUserDetails) => {
+  const onSubmit = async (data: LoginUserDetails) => {
     console.log(data);
     try {
-      const apiResponse = await userLogin(data);
-      if (apiResponse) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("image");
-        localStorage.removeItem("userInfo");
+      const response = await login({
+        variables: {
+          username: data.username,
+          password: data.password,
+        },
+      });
+      console.log(response);
+      if (response.data) {
+        const tokens = response.data;
+        const accessToken = tokens.login.accessToken;
+        const refreshToken = tokens.login.refreshToken;
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        navigator("/");
       }
-      localStorage.setItem("accessToken", apiResponse.accessToken);
-      localStorage.setItem("refreshToken", apiResponse.refreshToken);
-      localStorage.setItem("image", apiResponse.image);
-      setUserData(apiResponse);
-      setLogedin(true);
-      navigator("/");
     } catch (error) {
-      alert("user name or password wrong");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       console.error(error);
     }
   };
@@ -68,7 +77,18 @@ const Login = () => {
             <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
               Password
             </label>
-            <Input id="password" type="password" autoComplete="password" {...register("password", {})} />
+            <Input
+              id="password"
+              type="password"
+              autoComplete="password"
+              {...register("password", {
+                required: `Password is required`,
+                pattern: {
+                  value: /^.{8,}$/,
+                  message: "Password should contain at least 8 characters",
+                },
+              })}
+            />
             {errors.password && <p className="text-red-500 text-sm">{errors.password.message as string}</p>}
           </div>
 
@@ -103,6 +123,7 @@ const Login = () => {
           </Link>
         </div>
       </div>
+      <CustomAlert description="wrong Password" title="wrongpass" />
     </div>
   );
 };

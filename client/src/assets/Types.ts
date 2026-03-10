@@ -92,3 +92,9 @@ export interface ILogin {
   username: string;
   password: string;
 }
+export interface TodoData {
+  id: number;
+  todo: string;
+  completed: boolean;
+  userId: number;
+}
