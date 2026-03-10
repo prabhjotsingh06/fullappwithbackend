@@ -7,7 +7,9 @@ import { Spinner } from "../components/ui/spinner";
 
 const Dashboard = () => {
   const navigator = useNavigate();
-  const [currentUserData, setCurrentUserData] = useState<UserDetails | null>(null);
+  const [currentUserData, setCurrentUserData] = useState<UserDetails | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,7 +20,10 @@ const Dashboard = () => {
         navigator("/login");
       } else {
         try {
-          const fetchedUserData = await GetUserDetails(accessToken, refreshToken);
+          const fetchedUserData = await GetUserDetails(
+            accessToken,
+            refreshToken,
+          );
 
           if (fetchedUserData && "id" in fetchedUserData) {
             setCurrentUserData(fetchedUserData as UserDetails);
@@ -157,7 +162,9 @@ const Dashboard = () => {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
                 {currentUserData.firstName} {currentUserData.lastName}
               </h1>
-              <p className="text-slate-600 dark:text-slate-400 text-lg">@{currentUserData.username}</p>
+              <p className="text-slate-600 dark:text-slate-400 text-lg">
+                @{currentUserData.username}
+              </p>
             </div>
             <div className="flex gap-2">
               <span
@@ -165,7 +172,8 @@ const Dashboard = () => {
                   currentUserData.role === "admin"
                     ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
                     : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-                }`}>
+                }`}
+              >
                 {currentUserData.role?.toUpperCase()}
               </span>
             </div>
@@ -175,7 +183,12 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card, index) => (
-          <DashboardCard key={index} title={card.title} iconPath={card.iconPath} rows={card.rows} />
+          <DashboardCard
+            key={index}
+            title={card.title}
+            iconPath={card.iconPath}
+            rows={card.rows}
+          />
         ))}
       </div>
     </div>
